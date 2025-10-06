@@ -14,16 +14,13 @@ class Product(Base):
     rating = Column(Float, nullable=True, index=True)
     reviews_count = Column(Integer, nullable=True)
 
-    # source identifiers
     source_url = Column(String, nullable=True, index=True)
     source_product_id = Column(String, nullable=True, index=True)
 
-    # extended fields
-    attributes = Column(JSONB, nullable=True)  # key-value pairs
-    images = Column(JSONB, nullable=True)      # list of URLs
+    attributes = Column(JSONB, nullable=True)
+    images = Column(JSONB, nullable=True)
     sellers_count = Column(Integer, nullable=True, index=True)
 
-    # timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

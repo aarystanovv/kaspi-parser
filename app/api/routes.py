@@ -33,7 +33,7 @@ async def parse_from_seed(db: Session = Depends(get_db)):
 
 @router.post("/parse/url")
 async def parse_from_url(payload: dict, db: Session = Depends(get_db)):
-    url = payload.get("url")
+    url = payload.get("url") or payload.get("product_url")
     if not url:
         raise HTTPException(status_code=400, detail="url is required")
     parser = KaspiParserService()
@@ -43,4 +43,18 @@ async def parse_from_url(payload: dict, db: Session = Depends(get_db)):
     exporter = Exporter(settings.export_dir)
     exporter.export_product(db_product)
     exporter.export_offers(offers, db_product.id)
-    return {"status": "ok", "product_id": db_product.id}
+    return {
+        "status": "ok",
+        "product_id": db_product.id,
+        "name": product.name,
+        "category": product.category,
+        "min_price": str(product.min_price) if product.min_price is not None else None,
+        "max_price": str(product.max_price) if product.max_price is not None else None,
+        "rating": product.rating,
+        "reviews_count": product.reviews_count,
+        "sellers_count": product.sellers_count,
+        "offers_count": len(offers),
+        "images_count": len(product.images),
+        "source_url": product.source_url,
+        "source_product_id": product.source_product_id,
+    }

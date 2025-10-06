@@ -9,7 +9,6 @@ class ProductRepository:
         self.db = db
 
     def upsert_product_with_offers(self, product_in: ProductIn, offers_in: List[OfferIn]) -> Product:
-        query = None
         if product_in.source_product_id:
             query = select(Product).where(Product.source_product_id == product_in.source_product_id)
         else:

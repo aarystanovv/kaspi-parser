@@ -12,9 +12,6 @@ def upgrade() -> None:
     # add new columns to products
     op.add_column('products', sa.Column('source_url', sa.String(), nullable=True))
     op.add_column('products', sa.Column('source_product_id', sa.String(), nullable=True))
-    op.add_column('products', sa.Column('attributes', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
-    op.add_column('products', sa.Column('images', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
-    op.add_column('products', sa.Column('sellers_count', sa.Integer(), nullable=True))
     op.add_column('products', sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False))
     op.add_column('products', sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False))
 
@@ -51,8 +48,5 @@ def downgrade() -> None:
     # drop columns
     op.drop_column('products', 'updated_at')
     op.drop_column('products', 'created_at')
-    op.drop_column('products', 'sellers_count')
-    op.drop_column('products', 'images')
-    op.drop_column('products', 'attributes')
     op.drop_column('products', 'source_product_id')
     op.drop_column('products', 'source_url')

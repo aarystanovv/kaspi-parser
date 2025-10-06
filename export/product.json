@@ -1,0 +1,17 @@
+{
+  "id": 2,
+  "name": "Кухонные весы Generic SF-400",
+  "category": "Кухонные весы",
+  "min_price": "655.00",
+  "max_price": "655.00",
+  "rating": null,
+  "reviews_count": null,
+  "attributes": {
+    "Тип": "Конструкция",
+    "Элементы питания": "Материал корпуса"
+  },
+  "images": [
+    "https://resources.cdn-kaspi.kz/img/m/p/h47/ha1/64094073815070.jpg?format=gallery-large"
+  ],
+  "sellers_count": null
+}
