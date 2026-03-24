@@ -1,6 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from sqlalchemy.orm import Session
-from .db.session import SessionLocal
+from .db.session import AsyncSessionLocal
 from .services.parser import KaspiParserService
 from .repositories.product_repository import ProductRepository
 from .exporter import Exporter
@@ -18,18 +17,17 @@ def _job():
         url = seed.get("product_url")
         if not url:
             return
+
         async def run():
             parser = KaspiParserService()
             product, offers = await parser.fetch_and_parse(url)
-            db: Session = SessionLocal()
-            try:
+            async with AsyncSessionLocal() as db:
                 repo = ProductRepository(db)
-                db_product = repo.upsert_product_with_offers(product, offers)
+                db_product = await repo.upsert_product_with_offers(product, offers)
                 exporter = Exporter(settings.export_dir)
                 exporter.export_product(db_product)
                 exporter.export_offers(offers, db_product.id)
-            finally:
-                db.close()
+
         asyncio.run(run())
     except Exception:
         pass

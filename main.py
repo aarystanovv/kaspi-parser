@@ -1,7 +1,7 @@
 import asyncio
 import json
 from sqlalchemy import text
-from app.db.session import engine, SessionLocal
+from app.db.session import engine, AsyncSessionLocal
 from app.db.base import Base
 from app.core.config import settings
 from app.logging_config import setup_logging, get_logger
@@ -21,15 +21,12 @@ async def run_once() -> None:
     parser = KaspiParserService()
     product, offers = await parser.fetch_and_parse(url)
 
-    db = SessionLocal()
-    try:
+    async with AsyncSessionLocal() as db:
         repo = ProductRepository(db)
-        db_product = repo.upsert_product_with_offers(product, offers)
+        db_product = await repo.upsert_product_with_offers(product, offers)
         exporter = Exporter(settings.export_dir)
         exporter.export_product(db_product)
         exporter.export_offers(offers, db_product.id)
-    finally:
-        db.close()
 
 
 def main() -> None:

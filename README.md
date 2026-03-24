@@ -1,10 +1,22 @@
-# Тестовое задание: Парсер Kaspi магазина
+# Парсер Kaspi магазина
 
 ## 📌 Описание проекта
 Сервис на FastAPI парсит карточку товара Kaspi и сохраняет данные:
 - что парсит: название, категория, мин/макс цена, рейтинг, отзывы, (опц.) характеристики, изображения, количество продавцов, офферы
 - куда сохраняет: PostgreSQL (таблицы `products`, `offers`), JSON (`export/product.json`, `export/offers.jsonl`)
 - дополнительно: автообновление (15 минут), JSON-логирование, Docker, Alembic миграции
+
+## 🛠️ Стек технологий
+- **Python 3.11+**
+- **FastAPI** — асинхронный REST API
+- **SQLAlchemy 2.0** — ORM (используется `AsyncSession` + `asyncpg` для полностью асинхронной работы с БД)
+- **asyncpg** — асинхронный PostgreSQL-драйвер
+- **httpx** — асинхронный HTTP-клиент для парсинга
+- **BeautifulSoup4 + lxml** — парсинг HTML
+- **Alembic** — миграции БД
+- **APScheduler** — фоновое обновление данных
+- **structlog** — структурированное JSON-логирование
+- **Docker + Docker Compose**
 
 ## 🚀 Установка и запуск
 
@@ -20,7 +32,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Настройка окружения
-Создайте `.env` по примеру `.env.example`:
+Создайте `.env` по примеру:
 ```
 DB_HOST=localhost
 DB_PORT=5432
@@ -105,26 +117,42 @@ docker compose exec app alembic upgrade head
 Таблицы:
 
 **products**
-- id
-- name
-- category
-- min_price
-- max_price
-- rating
-- reviews_count
-- attributes (JSON)
-- images (JSON)
-- sellers_count
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | Integer, PK | Идентификатор |
+| name | String | Название товара |
+| category | String | Категория |
+| min_price | Numeric(12,2) | Минимальная цена |
+| max_price | Numeric(12,2) | Максимальная цена |
+| rating | Float | Рейтинг |
+| reviews_count | Integer | Количество отзывов |
+| attributes | JSONB | Характеристики |
+| images | JSONB | Изображения |
+| sellers_count | Integer | Количество продавцов |
+| source_url | String | URL источника |
+| source_product_id | String, UQ | ID товара на Kaspi |
+| created_at | DateTime | Дата создания |
+| updated_at | DateTime | Дата обновления |
 
 **offers**
-- id
-- product_id
-- seller
-- price
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | Integer, PK | Идентификатор |
+| product_id | Integer, FK | Связь с products |
+| seller | String | Название продавца |
+| price | Numeric(12,2) | Цена |
+
+## 🔗 API Эндпоинты
+
+| Метод | URL | Описание |
+|-------|-----|----------|
+| POST | `/parse` | Парсинг URL из `seed.json` |
+| POST | `/parse/url` | Парсинг по переданному URL (`{"url": "..."}`) |
+| GET | `/health` | Health check |
 
 ## 🔄 Обновления данных
 - Интервал: 15 минут (переключается переменной `SCHEDULER_ENABLED=true`).
-- Обновляются: поля продукта и офферы (простая синхронизация).
+- Обновляются: поля продукта и офферы (upsert по `source_product_id`).
 
 ## 📝 Пример логов
 ```json
@@ -132,12 +160,15 @@ docker compose exec app alembic upgrade head
 ```
 
 ## ✅ Что сделано
-- [x] Парсинг товара
-- [x] Сохранение в PostgreSQL
+- [x] Асинхронный парсинг товара (httpx + BeautifulSoup)
+- [x] Асинхронная работа с БД (AsyncSession + asyncpg)
+- [x] Сохранение в PostgreSQL (upsert)
 - [x] Экспорт в JSON
-- [x] Логирование (JSON)
-- [x] Docker
+- [x] REST API (FastAPI)
+- [x] Логирование (structlog, JSON)
+- [x] Docker + Docker Compose
 - [x] Alembic миграции
+- [x] Автообновление (APScheduler)
 
 ## 📄 Дополнительно
 - Возможные улучшения: устойчивые селекторы для Kaspi, кэширование, хранение истории цен.
